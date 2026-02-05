@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 mb-4 overflow-hidden">
+    <div :class="widget ? '' : 'bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 mb-4 overflow-hidden'">
         <!-- Header for widget mode -->
         <div v-if="widget" class="px-4 py-3 border-b border-gray-200 dark:border-dark-700">
             <h3 class="font-semibold text-gray-900 dark:text-dark-100 flex items-center gap-2">

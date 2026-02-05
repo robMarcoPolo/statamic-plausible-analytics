@@ -43,7 +43,11 @@ class TopPagesController extends CpController
         $results = $this->executeQuery($queryBody);
 
         if ($results === null) {
-            return response()->json(['error' => 'Failed to fetch data'], 500);
+            return response()->json([
+                'error' => 'Failed to fetch data',
+                'api_error' => $this->lastError,
+                'status_code' => $this->lastStatusCode,
+            ], 500);
         }
 
         // Transform API v2 response format to match expected frontend format

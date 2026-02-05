@@ -36,7 +36,7 @@ class TopPagesController extends CpController
             'metrics' => ['visitors'],
             'date_range' => $dateRange,
             'dimensions' => ['event:page'],
-            'order_by' => [['metrics.visitors', 'desc']],
+            'order_by' => [['visitors', 'desc']],
             'limit' => $limit,
         ];
 

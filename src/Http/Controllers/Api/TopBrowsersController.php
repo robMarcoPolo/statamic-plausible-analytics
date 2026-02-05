@@ -36,7 +36,7 @@ class TopBrowsersController extends CpController
             'metrics' => ['visitors'],
             'date_range' => $dateRange,
             'dimensions' => ['visit:browser'],
-            'order_by' => [['metrics.visitors', 'desc']],
+            'order_by' => [['visitors', 'desc']],
             'limit' => $limit,
         ];
 

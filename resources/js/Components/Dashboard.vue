@@ -1,16 +1,18 @@
 <template>
-    <div class="max-w-7xl mx-auto py-4">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div>
-                <h1 class="text-[25px] leading-[1.25] st-text-legibility font-medium antialiased flex items-center gap-2.5 md:flex-1">Analytics</h1>
-                <p class="text-sm text-gray-500 dark:text-dark-300 mt-1">
-                    Powered by Plausible Analytics
-                </p>
-            </div>
-
+        <header class="flex flex-wrap items-center justify-between gap-4 px-2 sm:px-0 py-6 max-md:pb-8 md:py-8" data-ui-header>
+            <h1 class="text-[25px] leading-[1.25] st-text-legibility font-medium antialiased flex items-center gap-2.5 md:flex-1">
+                <div class="size-5 relative">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="size-5 text-gray-500" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 3v18h18"/>
+                        <path d="m19 9-5 5-4-4-3 3"/>
+                    </svg>
+                </div>
+                Analytics
+            </h1>
             <!-- Period selector -->
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                 <div class="inline-flex rounded-lg border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-800 p-1">
                     <button
                         v-for="option in periodOptions"
@@ -27,7 +29,7 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </header>
 
         <!-- Main content -->
         <div class="space-y-6">

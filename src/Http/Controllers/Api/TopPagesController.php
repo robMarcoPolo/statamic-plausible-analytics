@@ -37,7 +37,7 @@ class TopPagesController extends CpController
             'date_range' => $dateRange,
             'dimensions' => ['event:page'],
             'order_by' => [['visitors', 'desc']],
-            'limit' => $limit,
+            'pagination' => ['limit' => $limit],
         ];
 
         $results = $this->executeQuery($queryBody);

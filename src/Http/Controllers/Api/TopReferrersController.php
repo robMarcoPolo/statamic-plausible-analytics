@@ -37,7 +37,7 @@ class TopReferrersController extends CpController
             'date_range' => $dateRange,
             'dimensions' => ['visit:source'],
             'order_by' => [['visitors', 'desc']],
-            'limit' => $limit,
+            'pagination' => ['limit' => $limit],
         ];
 
         $results = $this->executeQuery($queryBody);

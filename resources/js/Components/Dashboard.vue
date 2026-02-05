@@ -6,7 +6,7 @@
             <div class="flex items-center">
                 <span class="font-medium text-sm mr-2">Range:</span>
 
-                <select v-model="range" class="bg-white p-1 rounded-lg">
+                <select v-model="range" class="bg-white p-1 rounded-lg border">
                     <option value="day">Today</option>
                     <option value="yesterday">Yesterday</option>
                     <option value="7d">7 Days</option>
@@ -17,7 +17,7 @@
             </div>
         </div>
 
-        <VisitorOverview :period="range" :graph-color="graphColor" />
+        <VisitorOverview :period="range" />
 
         <TopPages :period="range" />
 
@@ -29,10 +29,11 @@
 </template>
 
 <script>
-import TopBrowser from "./TopBrowser";
-import TopReferrers from "./TopReferrers";
-import TopPages from "./TopPages";
-import VisitorOverview from "./VisitorOverview";
+import { ref } from 'vue';
+import TopBrowser from './TopBrowser.vue';
+import TopReferrers from './TopReferrers.vue';
+import TopPages from './TopPages.vue';
+import VisitorOverview from './VisitorOverview.vue';
 
 export default {
     components: {
@@ -42,10 +43,12 @@ export default {
         TopPages
     },
 
-    data() {
+    setup() {
+        const range = ref('7d');
+
         return {
-            range: '7d'
-        }
+            range
+        };
     }
-}
+};
 </script>

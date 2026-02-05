@@ -15,38 +15,46 @@ class AggregatesController extends CpController
         $this->key = 'plausible_aggregates_' . config('plausible.default_period');
     }
 
-    public function fetch(Request $request)
+    public function fetch(Request $request): mixed
     {
-        // Grab the period
         $period = $request->get('period') ?: '6mo';
-        $this->period = $this->matchPeriodToApi($period);
-
-        // Set the key for control of cache
+        $this->period = $period;
         $this->key = 'plausible_aggregates_' . $this->period;
 
-        // If we have cache, get results
         if (config('plausible.cache_enabled')) {
             return $this->getCachedResults();
         }
 
-        // Return all others if not.
         return $this->handleResults();
     }
 
-    public function handleResults()
+    public function handleResults(): mixed
     {
-        $url = sprintf(
-            "%s/api/v1/stats/aggregate?period=%s&metrics=visitors,pageviews,bounce_rate,visit_duration",
-            config('plausible.domain'),
-            $this->period
-        );
+        $dateRange = $this->convertPeriodToDateRange($this->period);
 
-        $url = $this->prepareUrl($url);
+        $queryBody = [
+            'metrics' => ['visitors', 'pageviews', 'bounce_rate', 'visit_duration'],
+            'date_range' => $dateRange,
+        ];
 
-        $results = array_reverse($this->fetchQuery($url));
+        $results = $this->executeQuery($queryBody);
 
-        $this->cacheResults($results);
+        if ($results === null) {
+            return response()->json(['error' => 'Failed to fetch data'], 500);
+        }
 
-        return $results;
+        // Transform API v2 response format to match expected frontend format
+        $transformed = [];
+        if (isset($results[0]['metrics'])) {
+            $metrics = $results[0]['metrics'];
+            $metricNames = ['visitors', 'pageviews', 'bounce_rate', 'visit_duration'];
+            foreach ($metricNames as $index => $name) {
+                $transformed[$name] = ['value' => $metrics[$index] ?? 0];
+            }
+        }
+
+        $this->cacheResults($transformed);
+
+        return $transformed;
     }
 }

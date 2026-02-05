@@ -8,61 +8,67 @@ use Illuminate\Support\Facades\Http;
 
 trait FetchResultsTrait
 {
-    public $key;
-    public $period;
+    public string $key = '';
+    public string $period = '';
 
-    public function prepareUrl(string $url): string
+    /**
+     * Build the API v2 query URL
+     */
+    public function getApiUrl(): string
     {
-        $parsed_url = parse_url($url);
-
-        // Avoid undefined index query
-        if (isset($parsed_url['query'])) {
-            parse_str($parsed_url['query'], $params);
-        } else {
-            $params = [];
-        }
-
-        $params['site_id'] = config('plausible.site');
-        $parsed_url['query'] = http_build_query($params);
-
-        return $parsed_url['scheme'] . '://' . $parsed_url['host'] . $parsed_url['path'] . '?' . $parsed_url['query'];
+        return config('plausible.domain') . '/api/v2/query';
     }
 
-    public function fetchQuery(string $url)
+    /**
+     * Execute a POST query against the Plausible API v2
+     */
+    public function executeQuery(array $queryBody): mixed
     {
-        $http = Http::withToken(config('plausible.key'))
-            ->get($url);
+        $queryBody['site_id'] = config('plausible.site');
 
-        if (! $http->ok()) {
-            return 'Not working';
+        $response = Http::withToken(config('plausible.key'))
+            ->post($this->getApiUrl(), $queryBody);
+
+        if (! $response->ok()) {
+            return null;
         }
 
-        $data = $http->json();
+        $data = $response->json();
 
-        return isset($data['results']) ? $data['results'] : $data;
+        return $data['results'] ?? $data;
     }
 
-    public function matchPeriodToApi(string $period): string
+    /**
+     * Convert period string to API v2 date_range format
+     */
+    public function convertPeriodToDateRange(string $period): string|array
     {
-        if ($period === 'day') {
-            $date = Carbon::now()->format('Y-m-d');
-            return 'day&date=' . $date;
-        }
-
-        if ($period === 'yesterday') {
-            $date = Carbon::now()->subDays(1)->format('Y-m-d');
-            return 'day&date=' . $date;
-        }
-
-        return $period;
+        return match($period) {
+            'day' => 'day',
+            'yesterday' => [
+                Carbon::yesterday()->format('Y-m-d'),
+                Carbon::yesterday()->format('Y-m-d')
+            ],
+            '7d' => '7d',
+            '30d' => '30d',
+            '6mo' => '6mo',
+            '12mo' => '12mo',
+            default => $period
+        };
     }
 
-    public function cacheResults($results): void
+    /**
+     * Cache results for the configured duration
+     */
+    public function cacheResults(mixed $results): void
     {
         Cache::put($this->key, $results, config('plausible.cache_duration'));
     }
 
-    public function getCachedResults()
+    /**
+     * Get cached results or fetch fresh data
+     */
+    public function getCachedResults(): mixed
     {
         return Cache::get($this->key, function() {
             return $this->handleResults();

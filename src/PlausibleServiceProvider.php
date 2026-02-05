@@ -2,10 +2,8 @@
 
 namespace Jackabox\Plausible;
 
-use Illuminate\Support\Facades\Artisan;
 use Statamic\Facades\CP\Nav;
 use Statamic\Providers\AddonServiceProvider;
-use Statamic\Statamic;
 
 class PlausibleServiceProvider extends AddonServiceProvider
 {
@@ -15,8 +13,11 @@ class PlausibleServiceProvider extends AddonServiceProvider
         'cp' => __DIR__ . '/../routes/cp.php'
     ];
 
-    protected $scripts = [
-        __DIR__ . '/../dist/js/statamic-plausible.js'
+    protected $vite = [
+        'input' => [
+            'resources/js/cp.js',
+        ],
+        'publicDirectory' => 'dist',
     ];
 
     protected $widgets = [
@@ -26,15 +27,12 @@ class PlausibleServiceProvider extends AddonServiceProvider
         Widgets\PlausibleVisitorOverview::class,
     ];
 
-    public function boot()
+    public function bootAddon(): void
     {
-        parent::boot();
-
         $this->createNavigation();
 
         $this->loadViewsFrom(__DIR__ . '/../resources/views/', 'plausible');
         $this->mergeConfigFrom(__DIR__ . '/../config/plausible.php', 'plausible');
-        $this->publishAssets();
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
@@ -57,13 +55,6 @@ class PlausibleServiceProvider extends AddonServiceProvider
                 ->icon('charts')
                 ->section('Tools')
                 ->route('plausible.index');
-        });
-    }
-
-    private function publishAssets(): void
-    {
-        Statamic::afterInstalled(function () {
-            Artisan::call('vendor:publish --tag=plausible-config');
         });
     }
 }

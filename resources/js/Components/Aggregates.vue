@@ -4,7 +4,7 @@
             v-for="(item, key, index) in data"
             :key="key"
             :class="{ 'border-r': index != getArrayLength }"
-            class="w-1/4 p-2 -r last:border-0"
+            class="w-1/4 p-2 last:border-0"
         >
             <h5 class="mb-1 text-xs font-medium uppercase text-grey-70">{{ getKeyTitle(key) }}</h5>
             <p class="text-2xl">
@@ -15,63 +15,61 @@
 </template>
 
 <script>
+import { ref, watch, onMounted, computed } from 'vue';
+
 export default {
     props: {
         period: {
             type: String,
             required: true
-        },
-    },
-
-    watch: {
-        $props: {
-            handler() {
-                this.fetch()
-            },
-            deep: true,
-            immediate: true
         }
     },
 
-    data() {
-        return {
-            data: []
-        }
-    },
+    setup(props) {
+        const data = ref({});
 
-    mounted() {
-        this.fetch()
-    },
+        const getArrayLength = computed(() => {
+            return Object.keys(data.value).length - 1;
+        });
 
-    computed: {
-        getArrayLength() {
-           return Object.keys(this.data).length - 1
-        }
-    },
+        const getKeyTitle = (key) => {
+            return key.replace(/_/g, ' ');
+        };
 
-    methods: {
-        getKeyTitle(key) {
-            return key.replace('_', ' ');
-        },
-
-        getKeyEnding(key) {
+        const getKeyEnding = (key) => {
             if (key === 'bounce_rate') {
-                return '%'
+                return '%';
             }
-
             if (key === 'visit_duration') {
-                return 's'
+                return 's';
             }
+            return '';
+        };
 
-            return;
-        },
+        const fetchData = async () => {
+            try {
+                const response = await fetch(`/cp/plausible/api/aggregates?period=${props.period}`);
+                const result = await response.json();
+                data.value = result;
+            } catch (err) {
+                console.error('Failed to fetch aggregates:', err);
+            }
+        };
 
-        async fetch() {
-            await fetch(`/cp/plausible/api/aggregates?period=${this.period}`)
-                .then(res => res.json())
-                .then(res => this.data = res)
-                .catch(err => console.log(err))
-        },
+        watch(() => props.period, () => {
+            fetchData();
+        }, { immediate: true });
+
+        onMounted(() => {
+            fetchData();
+        });
+
+        return {
+            data,
+            getArrayLength,
+            getKeyTitle,
+            getKeyEnding
+        };
     }
-}
+};
 </script>

@@ -4,25 +4,48 @@
 
         <Aggregates :period="period" />
 
-        <div v-if="showGraph">
-        <vue-frappe
-            id="test"
-            :lineOptions="options"
-            type="line"
-            :height="300"
-            :colors="getGraphColor"
-            :labels="labels"
-            :dataSets="series">
-        </vue-frappe>
+        <div v-if="showGraph" class="p-2">
+            <Line
+                :data="chartData"
+                :options="chartOptions"
+            />
         </div>
     </div>
 </template>
 
 <script>
-import { VueFrappe } from 'vue2-frappe'
-import Aggregates from './Aggregates'
+import { ref, watch, onMounted, computed } from 'vue';
+import { Line } from 'vue-chartjs';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler
+} from 'chart.js';
+import Aggregates from './Aggregates.vue';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler
+);
 
 export default {
+    components: {
+        Line,
+        Aggregates
+    },
+
     props: {
         period: {
             type: String,
@@ -40,51 +63,64 @@ export default {
         }
     },
 
-    watch: {
-        $props: {
-            handler() {
-                this.fetch()
+    setup(props) {
+        const labels = ref([]);
+        const series = ref([]);
+
+        const chartData = computed(() => ({
+            labels: labels.value,
+            datasets: [
+                {
+                    label: 'Visitors',
+                    data: series.value,
+                    fill: true,
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4
+                }
+            ]
+        }));
+
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
             },
-            deep: true,
-            immediate: true
-        }
-    },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        };
 
-    components: {
-        VueFrappe,
-        Aggregates
-    },
+        const fetchData = async () => {
+            try {
+                const response = await fetch(`/cp/plausible/api/timeseries?period=${props.period}`);
+                const data = await response.json();
+                labels.value = data.labels || [];
+                series.value = data.series || [];
+            } catch (err) {
+                console.error('Failed to fetch timeseries data:', err);
+            }
+        };
 
-    data() {
+        watch(() => props.period, () => {
+            fetchData();
+        }, { immediate: true });
+
+        onMounted(() => {
+            fetchData();
+        });
+
         return {
-            options: {
-                height: 500,
-                regionFill: 1
-            },
-            series: [{
-                name: "Visitors",
-                data: []
-            }]
-        }
-    },
-
-    mounted() {
-        this.fetch()
-    },
-
-    methods: {
-        async fetch() {
-            await fetch(`/cp/plausible/api/timeseries?period=${this.period}`)
-                .then(res => res.json())
-                .then(({ labels, series }) => {
-                    this.labels = labels
-                    this.series = [{
-                        name: 'Visitors',
-                        values: series
-                    }]
-                })
-                .catch(err => console.log(err))
-        },
+            labels,
+            series,
+            chartData,
+            chartOptions
+        };
     }
-}
+};
 </script>

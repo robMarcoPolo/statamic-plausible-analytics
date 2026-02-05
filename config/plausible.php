@@ -3,6 +3,7 @@
 return [
     /**
      * API Key from Plausible
+     * Generate this at https://plausible.io/settings (Stats API)
      */
     'key' => env('PLAUSIBLE_KEY', null),
 
@@ -14,25 +15,30 @@ return [
 
     /**
      * Do you want to use the cache?
-     * True of False.
+     * True or False.
      */
     'cache_enabled' => env('PLAUSIBLE_CACHE', true),
 
     /**
      * Domain where your plausible instance is hosted
-     * e.g. jackwhiting.co.uk
+     * e.g. https://plausible.io (default) or your self-hosted instance
      */
     'domain' => env('PLAUSIBLE_DOMAIN', 'https://plausible.io'),
 
-
     /**
-     * Cache duration
+     * Cache duration in seconds
      */
     'cache_duration' => 20000,
 
     /**
      * Default Time Period
-     * Options: day, yesterday, 7d, 30d, 6mo, 12mo,
+     * Options: day, yesterday, 7d, 30d, 6mo, 12mo
      */
     'default_period' => '6mo',
+
+    /**
+     * Number of results to show in breakdown widgets
+     * (Top Pages, Top Browsers, Top Referrers)
+     */
+    'results_limit' => 5,
 ];

@@ -1,29 +1,47 @@
 <template>
-    <div>
-        <div class="flex items-center justify-between mb-3">
-            <h1>Analytics</h1>
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-dark-100">Analytics</h1>
+                <p class="text-sm text-gray-500 dark:text-dark-300 mt-1">
+                    Powered by Plausible Analytics
+                </p>
+            </div>
 
-            <div class="flex items-center">
-                <span class="font-medium text-sm mr-2">Range:</span>
-
-                <select v-model="range" class="bg-white p-1 rounded-lg border">
-                    <option value="day">Today</option>
-                    <option value="yesterday">Yesterday</option>
-                    <option value="7d">7 Days</option>
-                    <option value="30d">30 Days</option>
-                    <option value="6mo">6 Months</option>
-                    <option value="12mo">12 Months</option>
-                </select>
+            <!-- Period selector -->
+            <div class="flex items-center gap-2">
+                <div class="inline-flex rounded-lg border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-800 p-1">
+                    <button
+                        v-for="option in periodOptions"
+                        :key="option.value"
+                        @click="range = option.value"
+                        :class="[
+                            'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+                            range === option.value
+                                ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300'
+                                : 'text-gray-600 dark:text-dark-300 hover:text-gray-900 dark:hover:text-dark-100'
+                        ]"
+                    >
+                        {{ option.label }}
+                    </button>
+                </div>
             </div>
         </div>
 
-        <VisitorOverview :period="range" />
+        <!-- Main content -->
+        <div class="space-y-6">
+            <!-- Visitor overview with chart -->
+            <VisitorOverview :period="range" />
 
-        <TopPages :period="range" />
+            <!-- Top Pages -->
+            <TopPages :period="range" />
 
-        <div class="flex -mx-2 mt-3">
-            <TopReferrers class="mx-2 w-1/2" :period="range" />
-            <TopBrowser class="mx-2 w-1/2" :period="range" />
+            <!-- Two column layout for sources and browsers -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <TopReferrers :period="range" />
+                <TopBrowser :period="range" />
+            </div>
         </div>
     </div>
 </template>
@@ -46,8 +64,17 @@ export default {
     setup() {
         const range = ref('7d');
 
+        const periodOptions = [
+            { value: 'day', label: 'Today' },
+            { value: '7d', label: '7D' },
+            { value: '30d', label: '30D' },
+            { value: '6mo', label: '6M' },
+            { value: '12mo', label: '12M' }
+        ];
+
         return {
-            range
+            range,
+            periodOptions
         };
     }
 };

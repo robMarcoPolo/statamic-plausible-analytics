@@ -1,5 +1,5 @@
 <template>
-    <div class="grid grid-cols-2 gap-4 p-4 md:grid-cols-4">
+    <div :class="['grid grid-cols-2 gap-4 md:grid-cols-4', widget ? 'px-4 py-3' : 'p-4']">
         <!-- Loading skeleton -->
         <template v-if="loading">
             <div v-for="i in 4" :key="i" class="animate-pulse">
@@ -41,6 +41,10 @@ export default {
         period: {
             type: String,
             required: true
+        },
+        widget: {
+            type: Boolean,
+            default: false
         }
     },
 

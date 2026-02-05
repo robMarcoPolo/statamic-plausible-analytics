@@ -1,33 +1,24 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import laravel from 'laravel-vite-plugin';
 import { resolve } from 'path';
 
 export default defineConfig({
     plugins: [
+        laravel({
+            input: ['resources/js/cp.js'],
+            publicDirectory: 'dist',
+            buildDirectory: 'build',
+            hotFile: 'dist/hot',
+        }),
         vue(),
     ],
     build: {
-        outDir: 'dist',
+        outDir: 'dist/build',
         emptyOutDir: true,
+        manifest: true,
         rollupOptions: {
-            input: {
-                cp: resolve(__dirname, 'resources/js/cp.js'),
-            },
-            output: {
-                entryFileNames: 'js/statamic-plausible.js',
-                chunkFileNames: 'js/[name]-[hash].js',
-                assetFileNames: (assetInfo) => {
-                    if (assetInfo.name?.endsWith('.css')) {
-                        return 'css/[name][extname]';
-                    }
-                    return 'assets/[name]-[hash][extname]';
-                },
-            },
             external: ['vue'],
-        },
-        lib: {
-            entry: resolve(__dirname, 'resources/js/cp.js'),
-            formats: ['es'],
         },
     },
     resolve: {

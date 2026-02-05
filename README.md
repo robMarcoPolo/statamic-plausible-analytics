@@ -7,7 +7,7 @@ A wrapper around the Plausible API that fetches the analytics into your dashboar
 Install the addon.
 
 ```
-composer require jackabox/statamic-plausible-analytics
+composer require robMarcoPolo/statamic-plausible-analytics
 ```
 
 Then follow the steps in the config step bellow.

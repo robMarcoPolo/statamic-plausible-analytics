@@ -5,7 +5,6 @@ namespace Jackabox\Plausible\Http\Traits;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 trait FetchResultsTrait
 {
@@ -30,15 +29,6 @@ trait FetchResultsTrait
         $queryBody['site_id'] = config('plausible.site');
         $url = $this->getApiUrl();
 
-        // Log request in debug mode
-        if (config('plausible.debug')) {
-            Log::debug('[Plausible] API Request', [
-                'url' => $url,
-                'site_id' => $queryBody['site_id'],
-                'query' => $queryBody,
-            ]);
-        }
-
         try {
             $response = Http::withToken(config('plausible.key'))
                 ->post($url, $queryBody);
@@ -46,27 +36,9 @@ trait FetchResultsTrait
             $statusCode = $response->status();
             $responseBody = $response->json();
 
-            // Log successful response in debug mode
-            if ($response->ok() && config('plausible.debug')) {
-                Log::debug('[Plausible] API Response', [
-                    'status' => $statusCode,
-                    'results_count' => isset($responseBody['results']) ? count($responseBody['results']) : 'N/A',
-                ]);
-            }
-
-            // Always log errors
             if (! $response->ok()) {
                 $errorMessage = $responseBody['error'] ?? $response->body();
 
-                Log::error('[Plausible] API Error', [
-                    'url' => $url,
-                    'status' => $statusCode,
-                    'error' => $errorMessage,
-                    'site_id' => $queryBody['site_id'],
-                    'query' => $queryBody,
-                ]);
-
-                // Store the error for the controller to use
                 $this->lastError = $errorMessage;
                 $this->lastStatusCode = $statusCode;
 
@@ -76,12 +48,7 @@ trait FetchResultsTrait
             return $responseBody['results'] ?? $responseBody;
 
         } catch (\Exception $e) {
-            Log::error('[Plausible] API Exception', [
-                'url' => $url,
-                'message' => $e->getMessage(),
-                'site_id' => $queryBody['site_id'],
-                'query' => $queryBody,
-            ]);
+            $this->lastError = $e->getMessage();
 
             return null;
         }
@@ -112,13 +79,6 @@ trait FetchResultsTrait
     public function cacheResults(mixed $results): void
     {
         Cache::put($this->key, $results, config('plausible.cache_duration'));
-
-        if (config('plausible.debug')) {
-            Log::debug('[Plausible] Results cached', [
-                'key' => $this->key,
-                'duration' => config('plausible.cache_duration'),
-            ]);
-        }
     }
 
     /**
@@ -129,14 +89,7 @@ trait FetchResultsTrait
         $cached = Cache::get($this->key);
 
         if ($cached !== null) {
-            if (config('plausible.debug')) {
-                Log::debug('[Plausible] Cache hit', ['key' => $this->key]);
-            }
             return $cached;
-        }
-
-        if (config('plausible.debug')) {
-            Log::debug('[Plausible] Cache miss', ['key' => $this->key]);
         }
 
         return $this->handleResults();

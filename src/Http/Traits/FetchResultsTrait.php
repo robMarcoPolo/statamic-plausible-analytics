@@ -5,6 +5,7 @@ namespace Jackabox\Plausible\Http\Traits;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 trait FetchResultsTrait
 {
@@ -25,17 +26,57 @@ trait FetchResultsTrait
     public function executeQuery(array $queryBody): mixed
     {
         $queryBody['site_id'] = config('plausible.site');
+        $url = $this->getApiUrl();
 
-        $response = Http::withToken(config('plausible.key'))
-            ->post($this->getApiUrl(), $queryBody);
-
-        if (! $response->ok()) {
-            return null;
+        // Log request in debug mode
+        if (config('plausible.debug')) {
+            Log::debug('[Plausible] API Request', [
+                'url' => $url,
+                'site_id' => $queryBody['site_id'],
+                'query' => $queryBody,
+            ]);
         }
 
-        $data = $response->json();
+        try {
+            $response = Http::withToken(config('plausible.key'))
+                ->post($url, $queryBody);
 
-        return $data['results'] ?? $data;
+            $statusCode = $response->status();
+            $responseBody = $response->json();
+
+            // Log successful response in debug mode
+            if ($response->ok() && config('plausible.debug')) {
+                Log::debug('[Plausible] API Response', [
+                    'status' => $statusCode,
+                    'results_count' => isset($responseBody['results']) ? count($responseBody['results']) : 'N/A',
+                ]);
+            }
+
+            // Always log errors
+            if (! $response->ok()) {
+                Log::error('[Plausible] API Error', [
+                    'url' => $url,
+                    'status' => $statusCode,
+                    'error' => $responseBody['error'] ?? 'Unknown error',
+                    'site_id' => $queryBody['site_id'],
+                    'query' => $queryBody,
+                ]);
+
+                return null;
+            }
+
+            return $responseBody['results'] ?? $responseBody;
+
+        } catch (\Exception $e) {
+            Log::error('[Plausible] API Exception', [
+                'url' => $url,
+                'message' => $e->getMessage(),
+                'site_id' => $queryBody['site_id'],
+                'query' => $queryBody,
+            ]);
+
+            return null;
+        }
     }
 
     /**
@@ -63,6 +104,13 @@ trait FetchResultsTrait
     public function cacheResults(mixed $results): void
     {
         Cache::put($this->key, $results, config('plausible.cache_duration'));
+
+        if (config('plausible.debug')) {
+            Log::debug('[Plausible] Results cached', [
+                'key' => $this->key,
+                'duration' => config('plausible.cache_duration'),
+            ]);
+        }
     }
 
     /**
@@ -70,8 +118,19 @@ trait FetchResultsTrait
      */
     public function getCachedResults(): mixed
     {
-        return Cache::get($this->key, function() {
-            return $this->handleResults();
-        });
+        $cached = Cache::get($this->key);
+
+        if ($cached !== null) {
+            if (config('plausible.debug')) {
+                Log::debug('[Plausible] Cache hit', ['key' => $this->key]);
+            }
+            return $cached;
+        }
+
+        if (config('plausible.debug')) {
+            Log::debug('[Plausible] Cache miss', ['key' => $this->key]);
+        }
+
+        return $this->handleResults();
     }
 }

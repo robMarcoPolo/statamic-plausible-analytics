@@ -2,6 +2,7 @@
 
 namespace Jackabox\Plausible;
 
+use Illuminate\Support\Facades\Log;
 use Statamic\Facades\CP\Nav;
 use Statamic\Providers\AddonServiceProvider;
 
@@ -29,15 +30,52 @@ class PlausibleServiceProvider extends AddonServiceProvider
 
     public function bootAddon(): void
     {
-        $this->createNavigation();
-
         $this->loadViewsFrom(__DIR__ . '/../resources/views/', 'plausible');
         $this->mergeConfigFrom(__DIR__ . '/../config/plausible.php', 'plausible');
+
+        $this->validateConfiguration();
+        $this->createNavigation();
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../config/plausible.php' => config_path('plausible.php'),
             ], 'plausible-config');
+        }
+    }
+
+    /**
+     * Validate configuration and log any issues
+     */
+    private function validateConfiguration(): void
+    {
+        $issues = [];
+
+        if (empty(config('plausible.key'))) {
+            $issues[] = 'PLAUSIBLE_KEY is not set';
+        }
+
+        if (empty(config('plausible.site'))) {
+            $issues[] = 'PLAUSIBLE_SITE is not set';
+        }
+
+        $domain = config('plausible.domain');
+        if (empty($domain)) {
+            $issues[] = 'PLAUSIBLE_DOMAIN is not set';
+        } elseif (! filter_var($domain, FILTER_VALIDATE_URL)) {
+            $issues[] = "PLAUSIBLE_DOMAIN '{$domain}' is not a valid URL";
+        }
+
+        if (! empty($issues)) {
+            Log::warning('[Plausible] Configuration issues detected', [
+                'issues' => $issues,
+            ]);
+        } elseif (config('plausible.debug')) {
+            Log::debug('[Plausible] Configuration validated successfully', [
+                'site' => config('plausible.site'),
+                'domain' => config('plausible.domain'),
+                'cache_enabled' => config('plausible.cache_enabled'),
+                'debug' => true,
+            ]);
         }
     }
 

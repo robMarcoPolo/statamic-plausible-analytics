@@ -41,4 +41,11 @@ return [
      * (Top Pages, Top Browsers, Top Referrers)
      */
     'results_limit' => 5,
+
+    /**
+     * Enable debug logging
+     * When enabled, logs all API requests and responses to Laravel's log
+     * Errors are always logged regardless of this setting
+     */
+    'debug' => env('PLAUSIBLE_DEBUG', false),
 ];

@@ -18,7 +18,7 @@ class PlausibleServiceProvider extends AddonServiceProvider
         'input' => [
             'resources/js/cp.js',
         ],
-        'publicDirectory' => 'dist',
+        'publicDirectory' => 'vendor/statamic-plausible-analytics',
         'buildDirectory' => 'build',
     ];
 

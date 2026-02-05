@@ -16,7 +16,7 @@ export default defineConfig({
     build: {
         outDir: 'dist/build',
         emptyOutDir: true,
-        manifest: true,
+        manifest: 'manifest.json',
         rollupOptions: {
             external: ['vue'],
         },

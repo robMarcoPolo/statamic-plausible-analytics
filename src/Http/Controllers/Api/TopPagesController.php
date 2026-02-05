@@ -10,39 +10,48 @@ class TopPagesController extends CpController
 {
     use FetchResultsTrait;
 
-    public function fetch(Request $request)
+    public function fetch(Request $request): mixed
     {
-        // Grab the period
         $period = $request->get('period') ?: '6mo';
-        $this->period = $this->matchPeriodToApi($period);
-
-        // Set the key for control of cache
+        $this->period = $period;
         $this->key = 'plausible_top_pages_' . $this->period;
 
-        // If we have cache, get results
         if (config('plausible.cache_enabled')) {
             return $this->getCachedResults();
         }
 
-        // Return all others if not.
         return $this->handleResults();
     }
 
-    public function handleResults()
+    public function handleResults(): mixed
     {
-        $url = sprintf(
-            "%s/api/v1/stats/breakdown?period=%s&property=event:page&limit=%d",
-            config('plausible.domain'),
-            $this->period,
-            config('plausible.results_limit', 5)
-        );
+        $dateRange = $this->convertPeriodToDateRange($this->period);
+        $limit = config('plausible.results_limit', 5);
 
-        $url = $this->prepareUrl($url);
+        $queryBody = [
+            'metrics' => ['visitors'],
+            'date_range' => $dateRange,
+            'dimensions' => ['event:page'],
+            'limit' => $limit,
+        ];
 
-        $results = $this->fetchQuery($url);
+        $results = $this->executeQuery($queryBody);
 
-        $this->cacheResults($results);
+        if ($results === null) {
+            return response()->json(['error' => 'Failed to fetch data'], 500);
+        }
 
-        return $results;
+        // Transform API v2 response format to match expected frontend format
+        $transformed = [];
+        foreach ($results as $result) {
+            $transformed[] = [
+                'page' => $result['dimensions'][0] ?? '',
+                'visitors' => $result['metrics'][0] ?? 0,
+            ];
+        }
+
+        $this->cacheResults($transformed);
+
+        return $transformed;
     }
 }

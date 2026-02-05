@@ -1,7 +1,7 @@
 {
     "name": "jackabox/statamic-plausible-analytics",
     "description": "Get your Plausible Analytics data right from your Statamic dashboard.",
-    "version": "1.2.1",
+    "version": "2.0.0",
     "autoload": {
         "psr-4": {
             "Jackabox\\Plausible\\": "src"
@@ -30,7 +30,9 @@
         }
     },
     "require": {
-        "guzzlehttp/guzzle": "^7.2"
+        "php": "^8.2",
+        "statamic/cms": "^6.0",
+        "guzzlehttp/guzzle": "^7.8"
     },
     "config": {
         "optimize-autoloader": true,

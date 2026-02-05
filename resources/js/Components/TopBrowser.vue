@@ -15,12 +15,13 @@
                     <td class="text-right">{{ item.visitors }}</td>
                 </tr>
             </tbody>
-
         </table>
     </div>
 </template>
 
 <script>
+import { ref, watch, onMounted } from 'vue';
+
 export default {
     props: {
         period: {
@@ -34,34 +35,30 @@ export default {
         }
     },
 
-    watch: {
-        $props: {
-            handler() {
-                this.fetch()
-            },
-            deep: true,
-            immediate: true
-        }
-    },
+    setup(props) {
+        const items = ref([]);
 
-    data() {
+        const fetchData = async () => {
+            try {
+                const response = await fetch(`/cp/plausible/api/top-browsers?period=${props.period}`);
+                const result = await response.json();
+                items.value = result;
+            } catch (err) {
+                console.error('Failed to fetch top browsers:', err);
+            }
+        };
+
+        watch(() => props.period, () => {
+            fetchData();
+        }, { immediate: true });
+
+        onMounted(() => {
+            fetchData();
+        });
+
         return {
-            error: null,
-            items: []
-        }
-    },
-
-    mounted() {
-        this.fetch()
-    },
-
-    methods: {
-        async fetch() {
-            await fetch(`/cp/plausible/api/top-browsers?period=${this.period}`)
-                .then(res => res.json())
-                .then(res => this.items = res)
-                .catch(err => console.log(err))
-        }
+            items
+        };
     }
-}
+};
 </script>

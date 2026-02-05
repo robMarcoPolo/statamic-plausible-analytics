@@ -15,41 +15,41 @@ class TimeseriesController extends CpController
         $this->key = 'plausible_timeseries_' . config('plausible.default_period');
     }
 
-    public function fetch(Request $request)
+    public function fetch(Request $request): mixed
     {
-        // Grab the period
         $period = $request->get('period') ?: '6mo';
-        $this->period = $this->matchPeriodToApi($period);
-
-        // Set the key for control of cache
+        $this->period = $period;
         $this->key = 'plausible_timeseries_' . $this->period;
 
-        // If we have cache, get results
         if (config('plausible.cache_enabled')) {
             return $this->getCachedResults();
         }
 
-        // Return all others if not.
         return $this->handleResults();
     }
 
     public function handleResults(): array
     {
-        $url = sprintf(
-            "%s/api/v1/stats/timeseries?period=%s",
-            config('plausible.domain'),
-            $this->period
-        );
+        $dateRange = $this->convertPeriodToDateRange($this->period);
 
-        $url = $this->prepareUrl($url);
-        $data = $this->fetchQuery($url);
+        $queryBody = [
+            'metrics' => ['visitors'],
+            'date_range' => $dateRange,
+            'dimensions' => ['time:day'],
+        ];
+
+        $data = $this->executeQuery($queryBody);
+
+        if ($data === null) {
+            return ['labels' => [], 'series' => []];
+        }
 
         $labels = [];
         $series = [];
 
         foreach ($data as $item) {
-            $labels[] = $item['date'];
-            $series[] = $item['visitors'];
+            $labels[] = $item['dimensions'][0] ?? '';
+            $series[] = $item['metrics'][0] ?? 0;
         }
 
         $results = [

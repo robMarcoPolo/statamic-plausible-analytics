@@ -8,7 +8,7 @@ use Statamic\Providers\AddonServiceProvider;
 
 class PlausibleServiceProvider extends AddonServiceProvider
 {
-    protected $publishAfterInstall = false;
+    protected $publishAfterInstall = true;
 
     protected $routes = [
         'cp' => __DIR__ . '/../routes/cp.php'
@@ -19,6 +19,11 @@ class PlausibleServiceProvider extends AddonServiceProvider
             'resources/js/cp.js',
         ],
         'publicDirectory' => 'dist',
+        'buildDirectory' => 'build',
+    ];
+
+    protected $publishables = [
+        __DIR__ . '/../dist' => 'statamic-plausible-analytics',
     ];
 
     protected $widgets = [

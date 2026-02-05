@@ -1,9 +1,9 @@
 <template>
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl mx-auto py-4">
         <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-dark-100">Analytics</h1>
+                <h1 class="text-[25px] leading-[1.25] st-text-legibility font-medium antialiased flex items-center gap-2.5 md:flex-1">Analytics</h1>
                 <p class="text-sm text-gray-500 dark:text-dark-300 mt-1">
                     Powered by Plausible Analytics
                 </p>

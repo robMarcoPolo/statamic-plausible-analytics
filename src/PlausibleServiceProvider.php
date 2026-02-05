@@ -91,7 +91,7 @@ class PlausibleServiceProvider extends AddonServiceProvider
 
         Nav::extend(function ($nav) {
             $nav->create('Analytics')
-                ->icon('charts')
+                ->icon('chart-bar-horizontal')
                 ->section('Tools')
                 ->route('plausible.index');
         });

@@ -20,9 +20,11 @@ export default defineConfig({
         rollupOptions: {
             external: ['vue'],
             output: {
+                format: 'iife',
                 globals: {
                     vue: 'Vue',
                 },
+                entryFileNames: 'assets/cp.js',
             },
         },
     },

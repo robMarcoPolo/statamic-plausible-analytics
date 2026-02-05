@@ -19,6 +19,11 @@ export default defineConfig({
         manifest: 'manifest.json',
         rollupOptions: {
             external: ['vue'],
+            output: {
+                globals: {
+                    vue: 'Vue',
+                },
+            },
         },
     },
     resolve: {

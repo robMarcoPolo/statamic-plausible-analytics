@@ -1,1 +1,1 @@
-<plausible-top-pages period="{{ $period }}" :widget="1" />
+<plausible-top-pages period="{{ $period }}" :widget="true" />

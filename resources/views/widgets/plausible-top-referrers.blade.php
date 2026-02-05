@@ -1,1 +1,1 @@
-<plausible-top-referrers period="{{ $period }}" :widget="1" />
+<plausible-top-referrers period="{{ $period }}" :widget="true" />

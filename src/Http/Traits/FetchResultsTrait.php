@@ -100,8 +100,8 @@ trait FetchResultsTrait
             ],
             '7d' => '7d',
             '30d' => '30d',
-            '6mo' => '6mo',
-            '12mo' => '12mo',
+            '6m', '6mo' => '6mo',
+            '12m', '12mo' => '12mo',
             default => $period
         };
     }

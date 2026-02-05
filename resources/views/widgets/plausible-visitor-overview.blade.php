@@ -1,5 +1,5 @@
 <plausible-visitor-overview
     period="{{ $period }}"
-    :widget="1"
-    :show-graph="{{ $show_graph }}"
+    :widget="true"
+    :show-graph="{{ $show_graph ? 'true' : 'false' }}"
 />

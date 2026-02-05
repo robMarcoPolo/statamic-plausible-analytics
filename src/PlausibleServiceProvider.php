@@ -18,12 +18,8 @@ class PlausibleServiceProvider extends AddonServiceProvider
         'input' => [
             'resources/js/cp.js',
         ],
-        'publicDirectory' => 'vendor/statamic-plausible-analytics',
+        'publicDirectory' => 'dist',
         'buildDirectory' => 'build',
-    ];
-
-    protected $publishables = [
-        __DIR__ . '/../dist' => 'statamic-plausible-analytics',
     ];
 
     protected $widgets = [
@@ -95,7 +91,7 @@ class PlausibleServiceProvider extends AddonServiceProvider
 
         Nav::extend(function ($nav) {
             $nav->create('Analytics')
-                ->icon('charts')
+                ->icon('earth')
                 ->section('Tools')
                 ->route('plausible.index');
         });

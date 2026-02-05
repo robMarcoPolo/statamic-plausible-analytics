@@ -19,6 +19,13 @@ export default defineConfig({
         manifest: 'manifest.json',
         rollupOptions: {
             external: ['vue'],
+            output: {
+                format: 'iife',
+                globals: {
+                    vue: 'Vue',
+                },
+                entryFileNames: 'assets/cp.js',
+            },
         },
     },
     resolve: {

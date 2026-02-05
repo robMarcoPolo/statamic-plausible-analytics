@@ -1,7 +1,7 @@
 <template>
-    <div class="bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 overflow-hidden">
-        <!-- Header -->
-        <div class="px-4 py-3 border-b border-gray-200 dark:border-dark-700">
+    <div :class="widget ? '' : 'bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 overflow-hidden'">
+        <!-- Header (only for non-widget mode) -->
+        <div v-if="!widget" class="px-4 py-3 border-b border-gray-200 dark:border-dark-700">
             <h3 class="font-semibold text-gray-900 dark:text-dark-100 flex items-center gap-2">
                 <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"/>
@@ -11,7 +11,6 @@
                     <line x1="10.88" y1="21.94" x2="15.46" y2="14"/>
                 </svg>
                 Top Browsers
-                <span v-if="widget" class="text-sm font-normal text-gray-500 dark:text-dark-300">({{ periodLabel }})</span>
             </h3>
         </div>
 

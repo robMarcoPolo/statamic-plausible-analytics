@@ -1,22 +1,10 @@
 <template>
-    <div class="bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 mb-4 overflow-hidden">
-        <!-- Header for widget mode -->
-        <div v-if="widget" class="px-4 py-3 border-b border-gray-200 dark:border-dark-700">
-            <h3 class="font-semibold text-gray-900 dark:text-dark-100 flex items-center gap-2">
-                <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 3v18h18"/>
-                    <path d="m19 9-5 5-4-4-3 3"/>
-                </svg>
-                Analytics
-                <span class="text-sm font-normal text-gray-500 dark:text-dark-300">({{ periodLabel }})</span>
-            </h3>
-        </div>
-
+    <div :class="widget ? '' : 'bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700 mb-4 overflow-hidden'">
         <!-- Stats -->
-        <Aggregates :period="period" />
+        <Aggregates :period="period" :widget="widget" />
 
         <!-- Chart -->
-        <div v-if="showGraph" class="p-4 pt-2">
+        <div v-if="showGraph" :class="widget ? 'px-4 py-3' : 'p-4 pt-2'">
             <!-- Loading skeleton -->
             <div v-if="loading" class="h-48 animate-pulse bg-gray-100 dark:bg-dark-700 rounded"></div>
 

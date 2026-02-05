@@ -11,6 +11,8 @@ trait FetchResultsTrait
 {
     public string $key = '';
     public string $period = '';
+    public ?string $lastError = null;
+    public ?int $lastStatusCode = null;
 
     /**
      * Build the API v2 query URL
@@ -54,13 +56,19 @@ trait FetchResultsTrait
 
             // Always log errors
             if (! $response->ok()) {
+                $errorMessage = $responseBody['error'] ?? $response->body();
+
                 Log::error('[Plausible] API Error', [
                     'url' => $url,
                     'status' => $statusCode,
-                    'error' => $responseBody['error'] ?? 'Unknown error',
+                    'error' => $errorMessage,
                     'site_id' => $queryBody['site_id'],
                     'query' => $queryBody,
                 ]);
+
+                // Store the error for the controller to use
+                $this->lastError = $errorMessage;
+                $this->lastStatusCode = $statusCode;
 
                 return null;
             }
@@ -92,8 +100,8 @@ trait FetchResultsTrait
             ],
             '7d' => '7d',
             '30d' => '30d',
-            '6mo' => '6mo',
-            '12mo' => '12mo',
+            '6m', '6mo' => '6mo',
+            '12m', '12mo' => '12mo',
             default => $period
         };
     }

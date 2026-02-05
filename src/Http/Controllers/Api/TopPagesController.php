@@ -2,6 +2,7 @@
 
 namespace Jackabox\Plausible\Http\Controllers\Api;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Jackabox\Plausible\Http\Traits\FetchResultsTrait;
 use Statamic\Http\Controllers\CP\CpController;
@@ -10,20 +11,23 @@ class TopPagesController extends CpController
 {
     use FetchResultsTrait;
 
-    public function fetch(Request $request): mixed
+    public function fetch(Request $request): JsonResponse
     {
         $period = $request->get('period') ?: '6mo';
         $this->period = $period;
         $this->key = 'plausible_top_pages_' . $this->period;
 
         if (config('plausible.cache_enabled')) {
-            return $this->getCachedResults();
+            $cached = $this->getCachedResults();
+            if ($cached !== null) {
+                return response()->json($cached);
+            }
         }
 
         return $this->handleResults();
     }
 
-    public function handleResults(): mixed
+    public function handleResults(): JsonResponse
     {
         $dateRange = $this->convertPeriodToDateRange($this->period);
         $limit = config('plausible.results_limit', 5);
@@ -32,26 +36,35 @@ class TopPagesController extends CpController
             'metrics' => ['visitors'],
             'date_range' => $dateRange,
             'dimensions' => ['event:page'],
-            'limit' => $limit,
+            'order_by' => [['visitors', 'desc']],
+            'pagination' => ['limit' => $limit],
         ];
 
         $results = $this->executeQuery($queryBody);
 
         if ($results === null) {
-            return response()->json(['error' => 'Failed to fetch data'], 500);
+            return response()->json([
+                'error' => 'Failed to fetch data',
+                'api_error' => $this->lastError,
+                'status_code' => $this->lastStatusCode,
+            ], 500);
         }
 
         // Transform API v2 response format to match expected frontend format
         $transformed = [];
-        foreach ($results as $result) {
-            $transformed[] = [
-                'page' => $result['dimensions'][0] ?? '',
-                'visitors' => $result['metrics'][0] ?? 0,
-            ];
+        if (is_array($results)) {
+            foreach ($results as $result) {
+                if (isset($result['dimensions'], $result['metrics'])) {
+                    $transformed[] = [
+                        'page' => $result['dimensions'][0] ?? '',
+                        'visitors' => $result['metrics'][0] ?? 0,
+                    ];
+                }
+            }
         }
 
         $this->cacheResults($transformed);
 
-        return $transformed;
+        return response()->json($transformed);
     }
 }
